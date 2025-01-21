@@ -1,0 +1,27 @@
+# Boomlify Robots.txt
+User-agent: *
+Allow: /
+
+# Disallow admin and private routes
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /admin
+Disallow: /admin/*
+
+# Allow crawling of public pages
+Allow: /features
+Allow: /how-it-works
+Allow: /faq
+Allow: /blog
+Allow: /privacy
+Allow: /terms
+Allow: /cookie-policy
+Allow: /gdpr
+Allow: /about
+Allow: /contact
+
+# Crawl-delay
+Crawl-delay: 10
+
+# Sitemap location
+Sitemap: https://boomlify.com/sitemap.xml

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- Microsoft Bing Verification -->
+    <meta name="msvalidate.01" content="C3A6045951DC0993C54113CB95FD082D" />
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/fonts/Roboto-Regular.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/OpenSans-Regular.woff2" as="font" type="font/woff2" crossorigin>
+    
+    <!-- Primary Meta Tags -->
+    <title>Boomlify - Free Long-Term Temporary Email Service | Valid for 2+ Months</title>
+    <meta name="title" content="Boomlify - Free Long-Term Temporary Email Service | Valid for 2+ Months">
+    <meta name="description" content="Create free temporary emails valid for 2+ months! Extend validity anytime. 100% free disposable email service with unlimited addresses. Perfect for privacy protection and spam prevention.">
+    <meta name="keywords" content="temporary email, disposable email, temp mail, tempmail, temp email address, anonymous email, throwaway email, fake email, temporary inbox, disposable inbox, temporary email generator, disposable email generator, free temp mail, temporary email service, disposable email service, anonymous email service, temporary email address, disposable email address, temp mail generator, tempmail service, temporary email provider, disposable email provider, secure temp mail, private email, temporary email protection, disposable email protection, temp mail for verification, temporary email for signups, disposable email for registration, temp mail privacy, temporary email security, disposable email privacy">
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="author" content="Boomlify">
+    <link rel="canonical" href="https://boomlify.com/">
+    <meta name="language" content="English">
+    <meta name="revisit-after" content="7 days">
+    <meta name="rating" content="General">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4A90E2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Boomlify">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://boomlify.com/">
+    <meta property="og:title" content="Boomlify - Free Long-Term Temporary Email Service | Valid for 2+ Months">
+    <meta property="og:description" content="Create free temporary emails valid for 2+ months! Extend validity anytime. 100% free disposable email service with unlimited addresses. Perfect for privacy protection and spam prevention.">
+    <meta property="og:image" content="https://boomlify.com/og-image.jpg">
+    <meta property="og:site_name" content="Boomlify">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://boomlify.com/">
+    <meta property="twitter:title" content="Boomlify - Free Long-Term Temporary Email Service | Valid for 2+ Months">
+    <meta property="twitter:description" content="Create free temporary emails valid for 2+ months! Extend validity anytime. 100% free disposable email service with unlimited addresses. Perfect for privacy protection and spam prevention.">
+    <meta property="twitter:image" content="https://boomlify.com/twitter-image.jpg">
+    <meta name="twitter:creator" content="@boomlify">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Boomlify",
+        "url": "https://boomlify.com",
+        "description": "Free temporary email service valid for 2+ months with unlimited addresses for privacy protection and spam prevention.",
+        "applicationCategory": "Email Service",
+        "operatingSystem": "All",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "2+ months email validity",
+          "Unlimited email addresses",
+          "No registration required",
+          "Privacy protection",
+          "Spam prevention",
+          "Custom domains"
+        ]
+      }
+    </script>
+
+    <!-- Inline critical CSS -->
+    <style>
+      /* Base styles */
+      body { 
+        margin: 0;
+        font-family: 'Open Sans', sans-serif;
+      }
+      
+      #root { 
+        min-height: 100vh;
+      }
+
+      /* Loading animation */
+      .loading {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(to right, #4A90E2, #357ABD);
+        color: white;
+      }
+
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+        margin-bottom: 1rem;
+      }
+
+      .loading-text {
+        font-size: 1.125rem;
+        font-weight: 500;
+        letter-spacing: 0.025em;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      /* Loading skeleton */
+      .loading-skeleton {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+
+      .skeleton-header {
+        height: 64px;
+        background: rgba(255, 255, 255, 0.1);
+        margin-bottom: 2rem;
+        border-radius: 0.5rem;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      .skeleton-content {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .skeleton-box {
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 0.8;
+        }
+        100% {
+          opacity: 0.6;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Boomlify...</div>
+        <div class="loading-skeleton">
+          <div class="skeleton-header"></div>
+          <div class="skeleton-content">
+            <div class="skeleton-box"></div>
+            <div class="skeleton-box"></div>
+            <div class="skeleton-box"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- Register service worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
+  </body>
+</html>
