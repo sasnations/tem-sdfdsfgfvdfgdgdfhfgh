@@ -1,0 +1,29 @@
+# Basic Configuration
+myhostname = mail.boomlify.com
+mydomain = boomlify.com
+myorigin = $mydomain
+inet_interfaces = all
+inet_protocols = ipv4
+mydestination = $myhostname, localhost.$mydomain, localhost
+
+# TLS parameters
+smtpd_tls_cert_file=/etc/letsencrypt/live/mail.boomlify.com/fullchain.pem
+smtpd_tls_key_file=/etc/letsencrypt/live/mail.boomlify.com/privkey.pem
+smtpd_use_tls=yes
+smtpd_tls_security_level = may
+smtpd_tls_protocols = !SSLv2, !SSLv3
+
+# Virtual domains and aliases
+virtual_alias_domains = hash:/etc/postfix/virtual_domains
+virtual_alias_maps = hash:/etc/postfix/virtual
+transport_maps = hash:/etc/postfix/transport
+
+# SMTP restrictions
+smtpd_recipient_restrictions =
+  permit_mynetworks,
+  permit_sasl_authenticated,
+  reject_unauth_destination
+
+# Size limits
+message_size_limit = 10240000
+mailbox_size_limit = 51200000

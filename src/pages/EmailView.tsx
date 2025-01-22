@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, RefreshCw, Star, Trash2, Archive, Flag, Mail as MailIcon, 
-  Clock, GripVertical, AlertTriangle, Copy, Check, ExternalLink, Download, Pause, Play 
+  Clock, GripVertical, AlertTriangle, Copy, Check, ExternalLink, Download, Pause, Play, QrCode 
 } from 'lucide-react';
 import axios from 'axios';
+import { QRCodeSVG } from 'qrcode.react';
 import { useAuthStore } from '../store/authStore';
 import { CopyButton } from '../components/CopyButton';
 import { DeleteConfirmation } from '../components/DeleteConfirmation';
@@ -37,6 +38,40 @@ interface Attachment {
   url: string;
 }
 
+interface QRModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  email: Email;
+}
+
+function QRModal({ isOpen, onClose, email }: QRModalProps) {
+  if (!isOpen) return null;
+
+  const qrData = JSON.stringify({
+    from: email.from_email,
+    subject: email.subject,
+    received: new Date(email.received_at).toLocaleString(),
+    body: email.body.replace(/<[^>]*>/g, '')
+  });
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+        <h3 className="text-lg font-bold text-gray-900 mb-4">Email QR Code</h3>
+        <div className="flex justify-center mb-4">
+          <QRCodeSVG value={qrData} size={200} />
+        </div>
+        <button
+          onClick={onClose}
+          className="w-full px-4 py-2 bg-[#4A90E2] text-white rounded-lg hover:bg-[#357ABD] transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const MIN_SIDEBAR_WIDTH = 300;
 const MAX_SIDEBAR_WIDTH = 600;
 
@@ -58,24 +93,25 @@ export function EmailView() {
   const [showActionFeedback, setShowActionFeedback] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true); // State for auto-refresh toggle
-  const [totalEmails, setTotalEmails] = useState<number>(0); // New state for total emails count
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+  const [qrModal, setQRModal] = useState<{ isOpen: boolean; email: Email | null }>({
+    isOpen: false,
+    email: null
+  });
   const sidebarRef = useRef<HTMLDivElement>(null);
 
-  // Fetch temp email and received emails on component mount
   useEffect(() => {
     fetchTempEmail();
     fetchReceivedEmails();
   }, [id]);
 
-  // Auto-refresh emails every 2 seconds if autoRefreshEnabled is true
   useEffect(() => {
     let refreshInterval: NodeJS.Timeout;
     if (autoRefreshEnabled) {
-      refreshInterval = setInterval(fetchReceivedEmails, 2000); // Refresh every 2 seconds
+      refreshInterval = setInterval(fetchReceivedEmails, 2000);
     }
     return () => {
-      if (refreshInterval) clearInterval(refreshInterval); // Cleanup interval on component unmount or when auto-refresh is disabled
+      if (refreshInterval) clearInterval(refreshInterval);
     };
   }, [autoRefreshEnabled]);
 
@@ -100,7 +136,6 @@ export function EmailView() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setReceivedEmails(response.data);
-      setTotalEmails(response.data.length); // Set total count
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch received emails:', error);
@@ -356,23 +391,18 @@ export function EmailView() {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
-                <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Total Emails: {totalEmails}
-                </span>
-                <button
-                  onClick={handleRefresh}
-                  disabled={isRefreshing}
-                  className={`p-2 rounded-full transition-colors ${
-                    isDark
-                      ? 'text-gray-400 hover:text-white hover:bg-gray-700'
-                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                  } ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  title="Refresh"
-                >
-                  <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-                </button>
-              </div>
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className={`p-2 rounded-full transition-colors ${
+                  isDark
+                    ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                } ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title="Refresh"
+              >
+                <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </button>
             )}
           </div>
         </div>
@@ -505,6 +535,17 @@ export function EmailView() {
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
+                      <button
+                        onClick={() => setQRModal({ isOpen: true, email: selectedEmail })}
+                        className={`p-2 rounded-full transition-colors ${
+                          isDark
+                            ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                            : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                        }`}
+                        title="Show QR Code"
+                      >
+                        <QrCode className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -578,6 +619,14 @@ export function EmailView() {
         onConfirm={handleDelete}
         itemName="this email"
       />
+
+      {qrModal.email && (
+        <QRModal
+          isOpen={qrModal.isOpen}
+          onClose={() => setQRModal({ isOpen: false, email: null })}
+          email={qrModal.email}
+        />
+      )}
     </div>
   );
 }

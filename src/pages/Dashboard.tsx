@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Trash2, RefreshCw, Mail, Clock, Archive } from 'lucide-react';
+import { Plus, Trash2, RefreshCw, Mail, Clock, Archive, QrCode } from 'lucide-react';
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { EmailSearch } from '../components/EmailSearch';
 import { DeleteConfirmation } from '../components/DeleteConfirmation';
 import { CopyButton } from '../components/CopyButton';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface ReceivedEmail {
   subject: string;
@@ -26,6 +27,33 @@ interface Domain {
   domain: string;
 }
 
+interface QRModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  email: string;
+}
+
+function QRModal({ isOpen, onClose, email }: QRModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+        <h3 className="text-lg font-bold text-gray-900 mb-4">QR Code for {email}</h3>
+        <div className="flex justify-center mb-4">
+          <QRCodeSVG value={email} size={200} />
+        </div>
+        <button
+          onClick={onClose}
+          className="w-full px-4 py-2 bg-[#4A90E2] text-white rounded-lg hover:bg-[#357ABD] transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function Dashboard() {
   const [tempEmails, setTempEmails] = useState<TempEmail[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
@@ -36,6 +64,10 @@ export function Dashboard() {
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; emailId: string; email: string }>({
     isOpen: false,
     emailId: '',
+    email: ''
+  });
+  const [qrModal, setQRModal] = useState<{ isOpen: boolean; email: string }>({
+    isOpen: false,
     email: ''
   });
 
@@ -280,6 +312,14 @@ export function Dashboard() {
                     </div>
                     <div className="mt-2 sm:mt-0 flex justify-end space-x-2">
                       <button
+                        onClick={() => setQRModal({ isOpen: true, email: email.email })}
+                        className={`text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full ${
+                          isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                        }`}
+                      >
+                        <QrCode className="h-5 w-5" />
+                      </button>
+                      <button
                         onClick={() => handleArchive(email.id)}
                         className={`text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                       >
@@ -305,6 +345,12 @@ export function Dashboard() {
         onClose={() => setDeleteConfirmation({ isOpen: false, emailId: '', email: '' })}
         onConfirm={deleteEmail}
         itemName={deleteConfirmation.email}
+      />
+
+      <QRModal
+        isOpen={qrModal.isOpen}
+        onClose={() => setQRModal({ isOpen: false, email: '' })}
+        email={qrModal.email}
       />
     </div>
   );
