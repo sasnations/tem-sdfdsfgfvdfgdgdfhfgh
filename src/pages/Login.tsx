@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Shield, Clock, CheckCircle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { BackButton } from '../components/BackButton';
@@ -29,9 +29,14 @@ export function Login() {
       </div>
       <div className="flex-1 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8">
         <div className="bg-white/95 backdrop-blur-sm w-full max-w-md rounded-xl shadow-2xl p-8">
-          <h1 className="text-3xl font-bold text-center text-[#333333] mb-8">
-            Welcome Back
-          </h1>
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-[#333333] mb-4">
+              Access Your Secure Temporary Email
+            </h1>
+            <p className="text-gray-600">
+              Login to manage your anonymous email addresses and protect your privacy
+            </p>
+          </div>
 
           {error && (
             <div className="mb-6 bg-red-50 border-l-4 border-[#FF6F61] p-4 rounded">
@@ -51,7 +56,7 @@ export function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent outline-none transition-all"
-                  placeholder="you@example.com"
+                  placeholder="Enter your email"
                   required
                 />
               </div>
@@ -85,9 +90,25 @@ export function Login() {
               type="submit"
               className="w-full bg-gradient-to-r from-[#4A90E2] to-[#357ABD] text-white rounded-lg px-6 py-3 hover:from-[#357ABD] hover:to-[#4A90E2] transition-all duration-300"
             >
-              Sign In
+              Access Your Secure Inbox
             </button>
           </form>
+
+          {/* Trust Features */}
+          <div className="mt-8 space-y-4">
+            <div className="flex items-center text-gray-600">
+              <Shield className="w-5 h-5 text-[#4A90E2] mr-2" />
+              <span>Privacy-focused temporary email service</span>
+            </div>
+            <div className="flex items-center text-gray-600">
+              <Clock className="w-5 h-5 text-[#4A90E2] mr-2" />
+              <span>2+ months email validity</span>
+            </div>
+            <div className="flex items-center text-gray-600">
+              <CheckCircle className="w-5 h-5 text-[#4A90E2] mr-2" />
+              <span>Spam-free secure inbox</span>
+            </div>
+          </div>
 
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
@@ -96,7 +117,7 @@ export function Login() {
                 to="/register"
                 className="text-[#4A90E2] hover:text-[#357ABD] font-medium transition-colors"
               >
-                Create Account
+                Create Free Account
               </Link>
             </p>
           </div>

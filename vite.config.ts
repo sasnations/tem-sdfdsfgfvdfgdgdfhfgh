@@ -5,7 +5,10 @@ import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
   plugins: [
-    react(),
+    react({
+      // Exclude sitemap.xml from React routing
+      exclude: ['**/sitemap.xml']
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
@@ -54,6 +57,22 @@ export default defineConfig({
   server: {
     headers: {
       'Cache-Control': 'public, max-age=31536000'
-    }
+    },
+    // Add middleware to serve sitemap.xml directly
+    middlewares: [
+      {
+        name: 'serve-sitemap',
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            if (req.url === '/sitemap.xml') {
+              res.setHeader('Content-Type', 'application/xml');
+              next();
+            } else {
+              next();
+            }
+          });
+        },
+      },
+    ],
   }
 });

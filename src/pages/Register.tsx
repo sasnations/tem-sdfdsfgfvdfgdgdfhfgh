@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Shield, Clock, CheckCircle, Star } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { BackButton } from '../components/BackButton';
@@ -80,9 +80,14 @@ export function Register() {
       </div>
       <div className="flex-1 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8">
         <div className="bg-white w-full max-w-md rounded-xl shadow-2xl p-8">
-          <h1 className="text-3xl font-bold text-center text-[#333333] mb-8">
-            Create Your Account
-          </h1>
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              Create Your Anonymous Email Account
+            </h1>
+            <p className="text-gray-600">
+              Get instant access to secure, disposable email addresses that protect your privacy
+            </p>
+          </div>
 
           {errors.general && (
             <div className="mb-6 bg-red-50 border-l-4 border-[#FF6F61] p-4 rounded">
@@ -92,7 +97,7 @@ export function Register() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-[#333333] mb-1">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Email Address
               </label>
               <div className="relative">
@@ -104,7 +109,7 @@ export function Register() {
                   className={`pl-10 w-full rounded-lg border ${
                     errors.email ? 'border-[#FF6F61]' : 'border-gray-300'
                   } px-4 py-2 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent outline-none transition-all`}
-                  placeholder="you@example.com"
+                  placeholder="Enter your email"
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-[#FF6F61]">{errors.email}</p>
@@ -113,7 +118,7 @@ export function Register() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#333333] mb-1">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Password
               </label>
               <div className="relative">
@@ -125,7 +130,7 @@ export function Register() {
                   className={`pl-10 w-full rounded-lg border ${
                     errors.password ? 'border-[#FF6F61]' : 'border-gray-300'
                   } px-4 py-2 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent outline-none transition-all`}
-                  placeholder="Create a password"
+                  placeholder="Create a secure password"
                 />
                 <button
                   type="button"
@@ -141,7 +146,7 @@ export function Register() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#333333] mb-1">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Confirm Password
               </label>
               <div className="relative">
@@ -171,12 +176,42 @@ export function Register() {
               {isLoading ? (
                 <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                'Create Account'
+                'Create Your Free Account'
               )}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          {/* Key Features */}
+          <div className="mt-8 space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Why Choose Our Temporary Email Service?
+            </h2>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-start">
+                <Shield className="w-5 h-5 text-[#4A90E2] mr-2 mt-1" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Privacy Protection</h3>
+                  <p className="text-sm text-gray-600">Anonymous email addresses with no personal data required</p>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <Clock className="w-5 h-5 text-[#4A90E2] mr-2 mt-1" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Extended Validity</h3>
+                  <p className="text-sm text-gray-600">2+ months email validity - longer than other services</p>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <Star className="w-5 h-5 text-[#4A90E2] mr-2 mt-1" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Premium Features</h3>
+                  <p className="text-sm text-gray-600">Spam protection, custom domains, and unlimited addresses</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
               <Link

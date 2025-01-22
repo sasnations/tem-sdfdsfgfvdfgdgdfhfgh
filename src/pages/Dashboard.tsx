@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Trash2, RefreshCw, Mail } from 'lucide-react';
+import { Plus, Trash2, RefreshCw, Mail, Clock, Archive } from 'lucide-react';
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
@@ -45,6 +45,12 @@ export function Dashboard() {
   useEffect(() => {
     fetchEmails();
     fetchDomains();
+  }, []);
+
+  // Auto-refresh emails every 30 seconds
+  useEffect(() => {
+    const refreshInterval = setInterval(fetchEmails, 30000); // Refresh every 30 seconds
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const fetchEmails = async () => {
@@ -144,6 +150,19 @@ export function Dashboard() {
     }
   };
 
+  const handleArchive = async (emailId: string) => {
+    try {
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL}/emails/${emailId}/archive`,
+        { archived: true },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setTempEmails(tempEmails.filter(email => email.id !== emailId));
+    } catch (error) {
+      console.error('Failed to archive email:', error);
+    }
+  };
+
   const filteredEmails = tempEmails.filter(email =>
     email.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -159,15 +178,17 @@ export function Dashboard() {
   return (
     <div className={isDark ? 'dark' : ''}>
       <div className="flex flex-col space-y-6 mb-6">
-        <div className="flex justify-between items-center">
+        {/* Mobile-friendly header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Your Temporary Emails
           </h1>
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto space-y-4 sm:space-y-0 sm:space-x-4">
+            {/* Responsive domain selector and email creation */}
             <select
               value={selectedDomain}
               onChange={(e) => setSelectedDomain(e.target.value)}
-              className={`rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 ${
+              className={`w-full sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 ${
                 isDark ? 'bg-gray-700 text-white border-gray-600' : ''
               }`}
             >
@@ -177,13 +198,13 @@ export function Dashboard() {
                 </option>
               ))}
             </select>
-            <div className="flex">
+            <div className="flex w-full sm:w-auto">
               <input
                 type="text"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
                 placeholder="Enter email prefix"
-                className={`rounded-l-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 ${
+                className={`flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 ${
                   isDark ? 'bg-gray-700 text-white border-gray-600' : ''
                 }`}
               />
@@ -191,14 +212,15 @@ export function Dashboard() {
                 onClick={createEmail}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-r-md shadow-sm text-sm font-medium text-white bg-[#4A90E2] hover:bg-[#357ABD] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                <Plus className="h-5 w-5 mr-2" />
-                Create
+                <Plus className="h-5 w-5 mr-2 sm:mr-0 sm:hidden" />
+                <span>Create</span>
               </button>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-4">
+        {/* Mobile-friendly search bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
           <div className="flex-1">
             <EmailSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
           </div>
@@ -217,6 +239,7 @@ export function Dashboard() {
         </div>
       )}
 
+      {/* Mobile-friendly email list */}
       {filteredEmails.length === 0 ? (
         <div className={`text-center py-12 ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
           <Mail className={`mx-auto h-12 w-12 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
@@ -230,41 +253,45 @@ export function Dashboard() {
           <ul className="divide-y divide-gray-200">
             {filteredEmails.map((email) => (
               <li key={email.id} className={`hover:bg-gray-50 transition-colors ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
-                <div className="px-6 py-4 flex items-center sm:px-6">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center space-x-2">
-                      <Link 
-                        to={`/dashboard/email/${email.id}`}
-                        className={`block hover:text-[#4A90E2] transition-colors ${isDark ? 'text-gray-300' : 'text-gray-900'}`}
+                <div className="px-4 py-4 sm:px-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 mb-2 sm:mb-0">
+                        <Link 
+                          to={`/dashboard/email/${email.id}`}
+                          className={`block hover:text-[#4A90E2] transition-colors ${isDark ? 'text-gray-300' : 'text-gray-900'}`}
+                        >
+                          <p className="text-sm font-medium truncate">{email.email}</p>
+                        </Link>
+                        <CopyButton text={email.email} />
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-sm text-gray-500">
+                        <span className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          Expires {formatDate(email.expires_at)}
+                        </span>
+                        {email.lastEmail && (
+                          <span className="flex items-center">
+                            <Mail className="w-4 h-4 mr-1" />
+                            {email.lastEmail.subject}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-2 sm:mt-0 flex justify-end space-x-2">
+                      <button
+                        onClick={() => handleArchive(email.id)}
+                        className={`text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                       >
-                        <p className="text-sm font-medium truncate">{email.email}</p>
-                      </Link>
-                      <CopyButton text={email.email} />
+                        <Archive className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => confirmDelete(email.id, email.email)}
+                        className={`text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
                     </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
-                      <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                        Created {formatDate(email.created_at)}
-                        {' · '}
-                        Expires {formatDate(email.expires_at)}
-                      </p>
-                      {email.lastEmail ? (
-                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'} truncate`}>
-                          Latest: {email.lastEmail.subject}
-                        </p>
-                      ) : (
-                        <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'} italic`}>
-                          No messages yet
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="ml-4 flex-shrink-0">
-                    <button
-                      onClick={() => confirmDelete(email.id, email.email)}
-                      className={`text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
                   </div>
                 </div>
               </li>

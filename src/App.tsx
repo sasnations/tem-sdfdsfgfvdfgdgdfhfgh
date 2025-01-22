@@ -21,8 +21,14 @@ import { About } from './pages/About';
 import { Contact } from './pages/Contact';
 import { Careers } from './pages/Careers';
 import { TempMailAdvanced } from './pages/TempMailAdvanced';
+import { ProFeatures } from './pages/ProFeatures';
 
 function App() {
+  // Exclude sitemap.xml from routing
+  if (window.location.pathname === '/sitemap.xml') {
+    return null;
+  }
+
   return (
     <Router>
       <Routes>
@@ -32,6 +38,7 @@ function App() {
         <Route path="/benefits" element={<Benefits />} />
         <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/temp-mail-advanced" element={<TempMailAdvanced />} />
+        <Route path="/temp-mail-pro" element={<ProFeatures />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />

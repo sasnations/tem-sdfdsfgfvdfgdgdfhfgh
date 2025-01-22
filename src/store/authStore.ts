@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
 import { AuthState } from '../types/auth';
+import { setUserData } from '../utils/analytics';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -9,6 +10,14 @@ export const useAuthStore = create<AuthState>()((set) => {
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
+
+  // If user exists, set analytics data
+  if (user) {
+    setUserData(user.id, {
+      email: user.email,
+      isAdmin: user.isAdmin
+    });
+  }
 
   return {
     user,
@@ -24,6 +33,13 @@ export const useAuthStore = create<AuthState>()((set) => {
         const { token, user } = response.data;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+        
+        // Track user in analytics
+        setUserData(user.id, {
+          email: user.email,
+          isAdmin: user.isAdmin
+        });
+        
         set({ user, token, isAuthenticated: true });
       } catch (error) {
         console.error('Login failed:', error);
@@ -40,6 +56,13 @@ export const useAuthStore = create<AuthState>()((set) => {
         const { token, user } = response.data;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+        
+        // Track user in analytics
+        setUserData(user.id, {
+          email: user.email,
+          isAdmin: user.isAdmin
+        });
+        
         set({ user, token, isAuthenticated: true });
       } catch (error) {
         console.error('Registration failed:', error);

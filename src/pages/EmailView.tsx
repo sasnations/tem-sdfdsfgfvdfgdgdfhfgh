@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, RefreshCw, Star, Trash2, Archive, Flag, Mail as MailIcon, 
-  Clock, GripVertical, AlertTriangle, Copy, Check, ExternalLink, Download 
+  Clock, GripVertical, AlertTriangle, Copy, Check, ExternalLink, Download, Pause, Play 
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
@@ -58,37 +58,26 @@ export function EmailView() {
   const [showActionFeedback, setShowActionFeedback] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true); // State for auto-refresh toggle
+  const [totalEmails, setTotalEmails] = useState<number>(0); // New state for total emails count
   const sidebarRef = useRef<HTMLDivElement>(null);
 
+  // Fetch temp email and received emails on component mount
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing) return;
-      const newWidth = Math.min(Math.max(e.clientX, MIN_SIDEBAR_WIDTH), MAX_SIDEBAR_WIDTH);
-      setSidebarWidth(newWidth);
-      e.preventDefault();
-    };
+    fetchTempEmail();
+    fetchReceivedEmails();
+  }, [id]);
 
-    const handleMouseUp = () => {
-      setIsResizing(false);
-      document.body.classList.remove('select-none');
-    };
-
-    if (isResizing) {
-      document.body.classList.add('select-none');
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+  // Auto-refresh emails every 2 seconds if autoRefreshEnabled is true
+  useEffect(() => {
+    let refreshInterval: NodeJS.Timeout;
+    if (autoRefreshEnabled) {
+      refreshInterval = setInterval(fetchReceivedEmails, 2000); // Refresh every 2 seconds
     }
-
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.classList.remove('select-none');
+      if (refreshInterval) clearInterval(refreshInterval); // Cleanup interval on component unmount or when auto-refresh is disabled
     };
-  }, [isResizing]);
-
-  const startResizing = () => {
-    setIsResizing(true);
-  };
+  }, [autoRefreshEnabled]);
 
   const fetchTempEmail = async () => {
     try {
@@ -111,6 +100,7 @@ export function EmailView() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setReceivedEmails(response.data);
+      setTotalEmails(response.data.length); // Set total count
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch received emails:', error);
@@ -120,11 +110,6 @@ export function EmailView() {
       setIsRefreshing(false);
     }
   };
-
-  useEffect(() => {
-    fetchTempEmail();
-    fetchReceivedEmails();
-  }, [id]);
 
   const handleRefresh = () => {
     fetchReceivedEmails();
@@ -312,10 +297,9 @@ export function EmailView() {
 
   return (
     <div className={`email-dashboard h-[calc(100vh-4rem)] flex flex-col ${isDark ? 'dark' : ''}`}>
-      {/* Header Section */}
       <div className={`p-4 border-b ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col space-y-2">
             <Link
               to="/dashboard"
               className={`inline-flex items-center ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
@@ -324,102 +308,83 @@ export function EmailView() {
               Back to Dashboard
             </Link>
             <div className="flex items-center space-x-2">
-              <h1 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {tempEmail.email}
+              <h1 className={`text-lg sm:text-xl font-semibold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {tempEmail?.email}
               </h1>
-              <button
-                onClick={copyToClipboard}
-                className={`p-1.5 rounded-full transition-colors ${
-                  isDark
-                    ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
-                    : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'
-                }`}
-                title="Copy email address"
-              >
-                {isCopied ? (
-                  <Check className="w-4 h-4 text-green-500" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-              </button>
+              <CopyButton text={tempEmail?.email || ''} />
             </div>
           </div>
 
-          {/* Bulk Actions */}
-          {selectedEmails.size > 0 ? (
-            <div className="flex items-center space-x-2">
-              <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                {selectedEmails.size} selected
-              </span>
-              <button
-                onClick={() => handleBulkAction('delete')}
-                className={`p-2 rounded-full transition-colors ${
-                  isDark
-                    ? 'text-gray-400 hover:text-red-400 hover:bg-gray-700'
-                    : 'text-gray-600 hover:text-red-500 hover:bg-gray-100'
-                }`}
-                title="Delete selected"
-              >
-                <Trash2 className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => handleBulkAction('archive')}
-                className={`p-2 rounded-full transition-colors ${
-                  isDark
-                    ? 'text-gray-400 hover:text-white hover:bg-gray-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-                title="Archive selected"
-              >
-                <Archive className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => handleBulkAction('spam')}
-                className={`p-2 rounded-full transition-colors ${
-                  isDark
-                    ? 'text-gray-400 hover:text-red-400 hover:bg-gray-700'
-                    : 'text-gray-600 hover:text-red-500 hover:bg-gray-100'
-                }`}
-                title="Mark selected as spam"
-              >
-                <Flag className="h-5 w-5" />
-              </button>
-            </div>
-          ) : (
+          <div className="flex items-center justify-end space-x-2">
             <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
+              onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
               className={`p-2 rounded-full transition-colors ${
                 isDark
                   ? 'text-gray-400 hover:text-white hover:bg-gray-700'
                   : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-              } ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title="Refresh"
+              }`}
+              title={autoRefreshEnabled ? 'Disable auto-refresh' : 'Enable auto-refresh'}
             >
-              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {autoRefreshEnabled ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
             </button>
-          )}
+            {selectedEmails.size > 0 ? (
+              <div className="flex items-center space-x-2">
+                <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {selectedEmails.size} selected
+                </span>
+                <button
+                  onClick={() => handleBulkAction('delete')}
+                  className={`p-2 rounded-full transition-colors ${
+                    isDark
+                      ? 'text-gray-400 hover:text-red-400 hover:bg-gray-700'
+                      : 'text-gray-600 hover:text-red-500 hover:bg-gray-100'
+                  }`}
+                  title="Delete selected"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => handleBulkAction('archive')}
+                  className={`p-2 rounded-full transition-colors ${
+                    isDark
+                      ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                  title="Archive selected"
+                >
+                  <Archive className="h-5 w-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  Total Emails: {totalEmails}
+                </span>
+                <button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  className={`p-2 rounded-full transition-colors ${
+                    isDark
+                      ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                  } ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title="Refresh"
+                >
+                  <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Action Feedback Toast */}
-      {showActionFeedback && (
-        <div className={`fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg ${
-          isDark ? 'bg-gray-800 text-white' : 'bg-gray-900 text-white'
-        }`}>
-          {showActionFeedback}
-        </div>
-      )}
-
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Email List with Resizable Width */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         <div
-          ref={sidebarRef}
-          style={{ width: `${sidebarWidth}px`, minWidth: `${MIN_SIDEBAR_WIDTH}px` }}
-          className={`border-r overflow-y-auto relative transition-all duration-150 ease-in-out ${
+          className={`${
+            selectedEmail ? 'hidden md:block' : 'block'
+          } w-full md:w-[380px] border-r overflow-y-auto ${
             isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } ${selectedEmail ? 'hidden md:block' : ''}`}
+          }`}
         >
           <div className="divide-y">
             {receivedEmails.map((email) => (
@@ -443,7 +408,7 @@ export function EmailView() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <span className={`font-medium ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>
+                    <span className={`font-medium truncate ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>
                       {email.from_email}
                     </span>
                     <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -465,32 +430,12 @@ export function EmailView() {
               </div>
             )}
           </div>
-          
-          {/* Resizer Handle */}
-          <div
-            className={`absolute top-0 right-0 w-4 h-full cursor-col-resize group hover:bg-[#4A90E2]/20 active:bg-[#4A90E2]/40 transition-colors duration-150 ${
-              isResizing ? 'bg-[#4A90E2]/40' : ''
-            }`}
-            onMouseDown={startResizing}
-          >
-            <div className={`absolute inset-y-0 right-1.5 w-0.5 ${
-              isDark ? 'bg-gray-600' : 'bg-gray-300'
-            } group-hover:bg-[#4A90E2] transition-colors duration-150`} />
-            
-            <div className={`absolute top-2 right-full mr-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 transition-opacity duration-150 ${
-              isResizing ? 'opacity-100' : 'group-hover:opacity-100'
-            }`}>
-              {Math.round(sidebarWidth)}px
-            </div>
-          </div>
         </div>
 
-        {/* Email Content */}
         {selectedEmail ? (
           <div className={`flex-1 overflow-y-auto ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
-            <div className="p-6 max-w-4xl mx-auto">
+            <div className="p-4 sm:p-6 max-w-4xl mx-auto">
               <div className={`bg-white rounded-lg shadow-lg overflow-hidden ${isDark ? 'bg-gray-800' : ''}`}>
-                {/* Email Header */}
                 <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                   <div className="flex justify-between items-start">
                     <div>
@@ -564,13 +509,11 @@ export function EmailView() {
                   </div>
                 </div>
 
-                {/* Email Body */}
                 <div 
                   className={`p-6 prose max-w-none ${isDark ? 'prose-invert' : ''}`}
                   dangerouslySetInnerHTML={{ __html: selectedEmail.body }}
                 />
 
-                {/* Attachments */}
                 {attachments.length > 0 && (
                   <div className={`p-6 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                     <h3 className={`text-sm font-medium mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -615,7 +558,7 @@ export function EmailView() {
             </div>
           </div>
         ) : (
-          <div className={`flex-1 flex items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+          <div className={`hidden md:flex flex-1 items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
             <div className="text-center">
               <MailIcon className={`h-12 w-12 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
               <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>
